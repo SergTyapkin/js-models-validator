@@ -1,5 +1,5 @@
 # Models validator
-![npm](https://img.shields.io/npm/dt/%40sergtyapkin%2Freconnecting-websocket)
+![npm](https://img.shields.io/npm/dt/%40sergtyapkin%2Fmodels-validator)
 
 Models Validator for objects.
 For example, for JSON-parsed objects that comes from network.
