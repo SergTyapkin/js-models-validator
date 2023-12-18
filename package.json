@@ -1,0 +1,17 @@
+{
+  "name": "@sergtyapkin/models-validator",
+  "version": "1.0.0",
+  "private": false,
+  "license": "MIT",
+  "author": {
+    "name": "Sergey Tyapkin",
+    "email": "Sererga115@gmail.com"
+  },
+  "homepage": "https://github.com/SergTyapkin/js-models-validator",
+  "scripts": {
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
