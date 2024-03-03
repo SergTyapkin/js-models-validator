@@ -1,8 +1,8 @@
 # Models validator
 ![npm](https://img.shields.io/npm/dt/%40sergtyapkin%2Fmodels-validator)
 
-Models Validator for objects.
-For example, for JSON-parsed objects that comes from network.
+Models Validator for Objects.
+For example, for JSON-parsed Objects that received from network.
 
 ---
 ## Docs for models:
@@ -26,7 +26,7 @@ All model fields describes as:
   ```JS
   {
     type: /**{{fieldType}}**/,
-    optional: true, // |=>  field will not be exists in result class if it's not provided
+    optional: true, // |=>  field will not be exists in result object if it's not provided
   }
   ```
 - Nested object declaration:
@@ -52,7 +52,7 @@ const exampleModel = {
   field6: new Set(["some_val", 456, "val2"]), // |=> Enumeration. Can only be "some_val" or 456 or "val2"
   field7: {
     type: String
-  }, // Equals as `field5: String`
+  }, // Equals as `field7: String`
   field8: {
     type: Object,
     fields: {
@@ -62,7 +62,7 @@ const exampleModel = {
   },
   field9: {
     type: Number,
-    optional: true, // |=>  field will not be exists in result class if it's not provided
+    optional: true, // |=>  field will not be exists in result object if it's not provided
   },
   field10: {
     type: Array,
