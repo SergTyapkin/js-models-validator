@@ -75,18 +75,14 @@ function parseLongDeclaring(resultObject, dataValue, type, key) {
         return;
     }
 
-    if (longDeclaringType instanceof Function) { // long simple type declaring
-        resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType, key);
-        return;
-    }
-
-    if (longDeclaringType instanceof Object) { // long field declaring
+    if (longDeclaringType === Object) { // long field declaring
         const longDeclaringModel = type.fields;
         resultObject[key] = {};
         parseFields(resultObject[key], longDeclaringModel, dataValue);
         return;
     }
-    resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType, key);
+
+    resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType, key); // long simple type declaring
 }
 function parseField(resultObject, dataValue, type, key, optional=false) {
     if (assertNotNull(dataValue, key, optional) === null) {
