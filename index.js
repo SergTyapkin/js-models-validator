@@ -10,25 +10,19 @@ function throwEnumError(key, allowedValuesSet, gottenValue) {
 function throwDeclaringError(key) {
     throw SyntaxError(`Error in declaring model field "${key}"`);
 }
-function assertNotNull(dataValue, key, optional=false) {
-    if (dataValue === undefined || dataValue === null) {
-        if (optional) {
-            return null;
-        } else {
-            throwFieldNotExists(key);
-        }
-    }
-    return dataValue;
-}
 
 function parseFieldSimpleType(dataValue, type, key) {
     let res;
     try {
-        res = new type(dataValue);
+        if ([String, Number, BigInt, Symbol, Boolean].includes(type)) {
+            res = type(dataValue); // use functional type construction for simple types
+        } else {
+            res = new type(dataValue); // use class constructor for another types
+        }
     } catch {
         throwParseError(key, type, dataValue);
     }
-    if (typeof res === 'number' && isNaN(res)) {
+    if (typeof res === 'number' && (isNaN(res) && !Number.isNaN(dataValue))) {
         throwParseError(key, type, dataValue);
     }
     return res;
@@ -36,28 +30,32 @@ function parseFieldSimpleType(dataValue, type, key) {
 function parseArray(dataValue, type, key) {
     const res = [];
     type.forEach((innerType, idx) => {
-        res[idx] = parseFieldSimpleType(dataValue[idx], innerType, `${key}[${idx}]`);
+        parseField(res, dataValue[idx], innerType, `${idx}`);
     });
     return res;
 }
 function parseUnlimitedArray(dataValue, itemType, key) {
+    if (!itemType) {
+        throwDeclaringError(key);
+    }
     const res = [];
     dataValue.forEach((dataValueItem, idx) => {
-        parseField(res, dataValueItem, itemType, idx, itemType.optional);
+        parseField(res, dataValueItem, itemType, idx, itemType.optional, itemType.default);
     });
     return res;
 }
 function parseSet(dataValue, type, key) {
     if (!type.has(dataValue)) {
         throwEnumError(key, type, dataValue);
-        return;
     }
     return dataValue;
 }
 
 function parseLongDeclaring(resultObject, dataValue, type, key) {
     const longDeclaringType = type.type;
-    const optional = type.optional;
+    if (!longDeclaringType) {
+        throwDeclaringError(key)
+    }
 
     if (Array.isArray(longDeclaringType)) { // long limited array declaring
         resultObject[key] = parseArray(dataValue, longDeclaringType, key);
@@ -84,11 +82,21 @@ function parseLongDeclaring(resultObject, dataValue, type, key) {
 
     resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType, key); // long simple type declaring
 }
-function parseField(resultObject, dataValue, type, key, optional=false) {
-    if (assertNotNull(dataValue, key, optional) === null) {
-        return;
+function parseField(resultObject, dataValue, type, key, optional=false, defaultValue=undefined) {
+    // Assert field existing (optional)
+    if (dataValue === undefined) { // Field not exists or equals undefined
+        if (optional) { // Field not exists and optional
+            if (defaultValue !== undefined) { // Field not exists, optional, but has default value
+                dataValue = defaultValue;
+            } else {
+                return; // Field not exists, optional, and hasn't default value -> skip
+            }
+        } else {
+            throwFieldNotExists(key); // Field not exists but must be exists
+        }
     }
 
+    // Parse field by it's type
     if (type instanceof Function) { // short declaring of any type
         resultObject[key] = parseFieldSimpleType(dataValue, type, key);
         return;
@@ -114,9 +122,10 @@ function parseField(resultObject, dataValue, type, key, optional=false) {
 function parseFields(resultObject, model, data) {
     Object.getOwnPropertyNames(model).forEach(key => {
         const type = model[key];
-        const dataValue = data[key];
+        const dataValue = data[type.fieldName || key];
         const optional = type.optional;
-        parseField(resultObject, dataValue, type, key, optional);
+        const defaultValue = type.default;
+        parseField(resultObject, dataValue, type, key, optional, defaultValue);
     });
 }
 
@@ -125,10 +134,10 @@ export default function validateModel(model, data) {
         data = JSON.parse(data);
     }
     if (typeof data !== 'object' || data === null) {
-        throw TypeError('Argument "data" is not valid type');
+        throw TypeError('Second argument "data" is not valid type. Must be Object or String');
     }
     if (typeof model !== 'object' || model === null) {
-        throw TypeError('Argument "model" must be Object');
+        throw TypeError('First argument "model" must be Object');
     }
 
     const resultObject = {};

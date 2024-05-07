@@ -27,6 +27,8 @@ All model fields describes as:
   {
     type: /**{{fieldType}}**/,
     optional: true, // |=>  field will not be exists in result object if it's not provided
+    default: "SomeDefaultValue", // => If field not provided in source data, it will have this value
+    fromName: "some_name", // |=>  field will be searched in the source model as a field with the name "some_name" 
   }
   ```
 - Nested object declaration:
@@ -39,6 +41,14 @@ All model fields describes as:
     }
   }
   ```
+
+## Fields options at long declaration as a result:
+- `type` `{{fieldType}}` - Describes the type to which the original field value is converted.
+- `optional` `[Boolean]` - If it has value "false", field can be not provided.
+- `default` `[Any value that converts to {{fieldType}}]` - If field is `optional` and it's not provided in source data, it will have this value.
+- `fieldName` `[String]` - Name of field with which it will be searched in the source model
+- `item` `{{long or short fieldType}}` - If field type is `Array`, it can be long or short declaring of field type.
+- `fields` `{Object}` - If field type is `Object`, it must be Object with long or short declaring of each object field.
 
 ----
 ## Example model description:
@@ -67,6 +77,7 @@ const exampleModel = {
   field10: {
     type: Array,
     item: String, // |=> short or long declaration of each field in array
+    fromName: "some_field_10", // |=> field will searched as field "some_field_10" and written in "field10"
   },
   field11: {
     type: Array,
