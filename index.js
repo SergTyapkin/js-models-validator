@@ -122,7 +122,7 @@ function parseField(resultObject, dataValue, type, key, optional=false, defaultV
 function parseFields(resultObject, model, data) {
     Object.getOwnPropertyNames(model).forEach(key => {
         const type = model[key];
-        const dataValue = data[type.fieldName || key];
+        const dataValue = data[type.from || key];
         const optional = type.optional;
         const defaultValue = type.default;
         parseField(resultObject, dataValue, type, key, optional, defaultValue);

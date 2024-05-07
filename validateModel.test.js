@@ -337,15 +337,15 @@ describe('Long declaration simple types. Positive', () => {
     const model = {
       field_1: {
         type: String,
-        fieldName: "another_field_1",
+        from: "another_field_1",
       },
       field_2: {
         type: Number,
-        fieldName: "another_field_2",
+        from: "another_field_2",
       },
       field_3: {
         type: Date,
-        fieldName: "another_field_3",
+        from: "another_field_3",
       },
     };
     const data = {
@@ -367,16 +367,16 @@ describe('Long declaration simple types. Positive', () => {
         type: String,
         optional: true,
         default: "default string",
-        fieldName: "another_field_1",
+        from: "another_field_1",
       },
       field_2: {
         type: Number,
-        fieldName: "another_field_2",
+        from: "another_field_2",
       },
       field_3: {
         type: Date,
         optional: true,
-        fieldName: "another_field_3",
+        from: "another_field_3",
       },
     };
     const data = {
@@ -454,7 +454,7 @@ describe('Long declaration simple types. Negative', () => {
     const model = {
       field_1: {
         type: Number,
-        fieldName: "another_field_1"
+        from: "another_field_1"
       },
       field_2: {
         type: Number,

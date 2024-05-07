@@ -8,7 +8,7 @@ For example, for JSON-parsed Objects that received from network.
 ---
 ## Docs for models:
 All model fields describes as:
-<br> `fieldName`: `fieldType`
+<br> `from`: `fieldType`
 
 `fieldType` can be declared as:
 
@@ -29,7 +29,7 @@ All model fields describes as:
     type: /**{{fieldType}}**/,
     optional: true, // |=>  field will not be exists in result object if it's not provided
     default: "SomeDefaultValue", // => If field not provided in source data, it will have this value
-    fromName: "some_name", // |=>  field will be searched in the source model as a field with the name "some_name" 
+    from: "some_name", // |=>  field will be searched in the source model as a field with the name "some_name" 
   }
   ```
 - Nested object declaration:
@@ -37,7 +37,7 @@ All model fields describes as:
   {
     type: Object,
     fields: {
-      // fieldName: fieldType,
+      // from: fieldType,
       // ...    
     }
   }
@@ -47,7 +47,7 @@ All model fields describes as:
 - `type` `{{fieldType}}` - Describes the type to which the original field value is converted.
 - `optional` `[Boolean]` - If it has value "false", field can be not provided.
 - `default` `[Any value that converts to {{fieldType}}]` - If field is `optional` and it's not provided in source data, it will have this value.
-- `fieldName` `[String]` - Name of field with which it will be searched in the source model
+- `from` `[String]` - Name of field with which it will be searched in the source model
 - `item` `{{long or short fieldType}}` - If field type is `Array`, it can be long or short declaring of field type.
 - `fields` `{Object}` - If field type is `Object`, it must be Object with long or short declaring of each object field.
 
@@ -78,7 +78,7 @@ const exampleModel = {
   field10: {
     type: Array,
     item: String, // |=> short or long declaration of each field in array
-    fromName: "some_field_10", // |=> field will searched as field "some_field_10" and written in "field10"
+    from: "some_field_10", // |=> field will searched as field "some_field_10" and written in "field10"
   },
   field11: {
     type: Array,
@@ -96,12 +96,15 @@ const exampleModel = {
 
 ```JS
 const UserModel = { // declare model
-  value: Number,
-  userName: [String, String],
-  sex: new Set(['male', 'female']),
+  age: Number,
+  userName: {
+    type: [String, String], // maybe ["name", "surname"]
+    from: "user_name", // name in API model
+  }, 
+  sex: new Set(['male', 'female']), // one of two values
   children: {
-    type: Array,
-    optional: true,
+    type: Array, // array with unlimited length
+    optional: true, // mey be not exists
     item: {
       type: Object,
       fields: {
@@ -115,3 +118,5 @@ const UserModel = { // declare model
 const response = fetch('/user', {method: 'GET'}); // get unvalidated JSON data
 const data = validateModel(UserModel, await response.text()); // validate
 ```
+
+_For more examples you can see file with tests [validateModel.test.js](./validateModel.test.js)_
