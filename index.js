@@ -131,7 +131,11 @@ function parseFields(resultObject, model, data) {
 
 export default function validateModel(model, data) {
     if (typeof data === 'string') {
-        data = JSON.parse(data);
+        try {
+            data = JSON.parse(data);
+        } catch (err) {
+            throw TypeError(`Second argument "data" cannot be parsed from string. Error:\n${err}`);
+        }
     }
     if (typeof data !== 'object' || data === null) {
         throw TypeError('Second argument "data" is not valid type. Must be Object or String');

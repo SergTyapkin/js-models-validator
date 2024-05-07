@@ -805,3 +805,54 @@ describe('Nested objects. Positive', () => {
     expect(validateModel(model, data)).toEqual(result);
   });
 });
+
+describe('Base function arguments. Negative', () => {
+  it('Model not Object 1', () => {
+    const model = String;
+    const data = {
+      field_1: "string",
+    };
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+  });
+
+  it('Model not Object 2', () => {
+    const model = 515;
+    const data = {
+      field_2: "string",
+    };
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+  });
+
+  it('Data not string or object', () => {
+    const model = {
+      field_1: BigInt,
+    };
+    const data = 700;
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+  });
+});
+
+describe("Data converts from string. Positive", () => {
+  it('Data is string', () => {
+    const model = {
+      field_1: String,
+      field_2: Number,
+    };
+    const data = '{"field_1": "61", "field_2": 515}';
+    const result = {
+      field_1: "61",
+      field_2: 515,
+    };
+    expect(validateModel(model, data)).toEqual(result);
+  });
+});
+describe("Data converts from string. Negative", () => {
+  it('Invalid JSON', () => {
+    const model = {
+      field_1: String,
+      field_2: Number,
+    };
+    const data = 'field_1: "61", "field_2": 515';
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+  });
+});
