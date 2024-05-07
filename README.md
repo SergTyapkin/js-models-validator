@@ -1,5 +1,6 @@
 # Models validator
-![npm](https://img.shields.io/npm/dt/%40sergtyapkin%2Fmodels-validator)
+![Run tests](https://github.com/SergTyapkin/js-models-validator/workflows/Run%20tests/badge.svg)
+![downloads](https://img.shields.io/npm/dt/%40sergtyapkin%2Fmodels-validator)
 
 Models Validator for Objects.
 For example, for JSON-parsed Objects that received from network.
