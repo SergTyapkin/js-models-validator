@@ -1,23 +1,55 @@
-function throwFieldNotExists(key) {
+type SimpleType = StringConstructor | NumberConstructor | BigIntConstructor | SymbolConstructor | BooleanConstructor
+type ConstructableType = {new (any?: any): any}
+type SetType = Set<any>
+type ArrayType = Array<any>
+type ComplexType = ConstructableType | SetType | ArrayType
+type _DefaultLongTypeDeclaringFields = {
+    type: TypeDeclaring,
+    from?: string,
+    optional?: boolean,
+    default?: any,
+}
+type ArrayLongTypeDeclaring = {
+    type: ArrayConstructor,
+    item: TypeDeclaring,
+} & _DefaultLongTypeDeclaringFields
+type ObjectLongTypeDeclaring = {
+    type: ObjectConstructor,
+    fields: {},
+} & _DefaultLongTypeDeclaringFields
+type SimpleLongTypeDeclaring = {
+    type: TypeDeclaring,
+} & _DefaultLongTypeDeclaringFields
+type LongTypeDeclaring = SimpleLongTypeDeclaring | ArrayLongTypeDeclaring | ObjectLongTypeDeclaring
+type ShortTypeDeclaring = SimpleType | ComplexType
+type TypeDeclaring = LongTypeDeclaring | ShortTypeDeclaring
+
+interface Model {
+    readonly [index: string]: TypeDeclaring
+}
+
+
+function throwFieldNotExists(key: string) {
     throw TypeError(`Field "${key}" not exists in provided data`);
 }
-function throwParseError(key, expectedType, realValue) {
+function throwParseError(key: string, expectedType: any, realValue: any) {
     throw TypeError(`Field "${key}" doesn\'t match type in declared model. Expected type: ${expectedType.name}. Gotten: ${JSON.stringify(realValue)}`);
 }
-function throwEnumError(key, allowedValuesSet, gottenValue) {
+function throwEnumError(key: string, allowedValuesSet: Iterable<any> | ArrayLike<any>, gottenValue: any) {
     throw TypeError(`Field "${key}" value not allowed in Enum. Allowed one of this values: ${JSON.stringify(Array.from(allowedValuesSet))}. Gotten: ${JSON.stringify(gottenValue)}`);
 }
-function throwDeclaringError(key) {
+function throwDeclaringError(key: string) {
     throw SyntaxError(`Error in declaring model field "${key}"`);
 }
 
-function parseFieldSimpleType(dataValue, type, key) {
+function parseFieldSimpleType(dataValue: any, type: SimpleType | ConstructableType, key: string) {
     let res;
     try {
-        if ([String, Number, BigInt, Symbol, Boolean].includes(type)) {
-            res = type(dataValue); // use functional type construction for simple types
+        if ([String, Number, BigInt, Symbol, Boolean].includes(type as SimpleType)) {
+            // @ts-ignore
+            res = (type as SimpleType)(dataValue); // use functional type construction for simple types
         } else {
-            res = new type(dataValue); // use class constructor for another types
+            res = new (type as ConstructableType)(dataValue); // use class constructor for another types
         }
     } catch {
         throwParseError(key, type, dataValue);
@@ -27,34 +59,36 @@ function parseFieldSimpleType(dataValue, type, key) {
     }
     return res;
 }
-function parseArray(dataValue, type, key) {
-    const res = [];
-    type.forEach((innerType, idx) => {
-        parseField(res, dataValue[idx], innerType, `${idx}`);
+function parseArray(dataValue: Array<any>, typesArray: Array<ShortTypeDeclaring>, key: string): any[] {
+    key;
+    const res: any[] = [];
+    typesArray.forEach((innerType, idx) => {
+        parseField(res, dataValue[idx], innerType, String(idx));
     });
     return res;
 }
-function parseUnlimitedArray(dataValue, itemType, key) {
+function parseUnlimitedArray(dataValue: Array<any>, itemType: TypeDeclaring, key: string) {
     if (!itemType) {
         throwDeclaringError(key);
     }
-    const res = [];
+    const res: any[] = [];
     dataValue.forEach((dataValueItem, idx) => {
-        parseField(res, dataValueItem, itemType, idx, itemType.optional, itemType.default);
+        // @ts-ignore
+        parseField(res, dataValueItem, itemType, String(idx), itemType.optional, itemType.default);
     });
     return res;
 }
-function parseSet(dataValue, type, key) {
+function parseSet(dataValue: any, type: SetType, key: string) {
     if (!type.has(dataValue)) {
         throwEnumError(key, type, dataValue);
     }
     return dataValue;
 }
 
-function parseLongDeclaring(resultObject, dataValue, type, key) {
+function parseLongDeclaring(resultObject: any, dataValue: any, type: LongTypeDeclaring, key: string) {
     const longDeclaringType = type.type;
     if (!longDeclaringType) {
-        throwDeclaringError(key)
+        throwDeclaringError(key);
     }
 
     if (Array.isArray(longDeclaringType)) { // long limited array declaring
@@ -63,7 +97,7 @@ function parseLongDeclaring(resultObject, dataValue, type, key) {
     }
 
     if (longDeclaringType === Array) { // long unlimited array declaring
-        const longDeclaringItem = type.item;
+        const longDeclaringItem = (type as ArrayLongTypeDeclaring).item;
         resultObject[key] = parseUnlimitedArray(dataValue, longDeclaringItem, key);
         return;
     }
@@ -74,15 +108,15 @@ function parseLongDeclaring(resultObject, dataValue, type, key) {
     }
 
     if (longDeclaringType === Object) { // long field declaring
-        const longDeclaringModel = type.fields;
+        const longDeclaringModel = (type as ObjectLongTypeDeclaring).fields;
         resultObject[key] = {};
         parseFields(resultObject[key], longDeclaringModel, dataValue);
         return;
     }
 
-    resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType, key); // long simple type declaring
+    resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType as SimpleType | ConstructableType, key); // long simple type declaring
 }
-function parseField(resultObject, dataValue, type, key, optional=false, defaultValue=undefined) {
+function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key: string, optional: boolean = false, defaultValue: any = undefined) {
     // Assert field existing (optional)
     if (dataValue === undefined) { // Field not exists or equals undefined
         if (optional) { // Field not exists and optional
@@ -98,7 +132,7 @@ function parseField(resultObject, dataValue, type, key, optional=false, defaultV
 
     // Parse field by it's type
     if (type instanceof Function) { // short declaring of any type
-        resultObject[key] = parseFieldSimpleType(dataValue, type, key);
+        resultObject[key] = parseFieldSimpleType(dataValue, type as SimpleType, key);
         return;
     }
 
@@ -113,23 +147,26 @@ function parseField(resultObject, dataValue, type, key, optional=false, defaultV
     }
 
     if (type instanceof Object) { // long any type declaring
-        parseLongDeclaring(resultObject, dataValue, type, key);
+        parseLongDeclaring(resultObject, dataValue, type as LongTypeDeclaring, key);
         return;
     }
 
     throwDeclaringError(key);
 }
-function parseFields(resultObject, model, data) {
+function parseFields(resultObject: any, model: Model, data: object) {
     Object.getOwnPropertyNames(model).forEach(key => {
         const type = model[key];
-        const dataValue = data[type.from || key];
+        // @ts-ignore
+        const dataValue: any | undefined = data[type.from || key];
+        // @ts-ignore
         const optional = type.optional;
+        // @ts-ignore
         const defaultValue = type.default;
         parseField(resultObject, dataValue, type, key, optional, defaultValue);
     });
 }
 
-export default function validateModel(model, data) {
+export default function validateModel(model: Model, data: object | string) {
     if (typeof data === 'string') {
         try {
             data = JSON.parse(data);
