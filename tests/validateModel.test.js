@@ -1,4 +1,4 @@
-import validateModel from "../src";
+import validateModel from "../dist/index.js";
 
 describe('Simple short declaration. Positive', () => {
   it('Simple parsing', () => {

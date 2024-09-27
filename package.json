@@ -25,7 +25,7 @@
     "url": "https://github.com/SergTyapkin/js-models-validator/issues"
   },
   "scripts": {
-    "test": "jest --coverage"
+    "test": "tsc && jest --coverage"
   },
   "dependencies": {},
   "devDependencies": {
