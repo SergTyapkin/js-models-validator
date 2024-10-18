@@ -24,7 +24,7 @@ type LongTypeDeclaring = SimpleLongTypeDeclaring | ArrayLongTypeDeclaring | Obje
 type ShortTypeDeclaring = SimpleType | ComplexType
 type TypeDeclaring = LongTypeDeclaring | ShortTypeDeclaring
 
-interface Model {
+export interface Model {
     readonly [index: string]: TypeDeclaring
 }
 
