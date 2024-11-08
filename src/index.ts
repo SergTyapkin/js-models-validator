@@ -166,7 +166,7 @@ function parseFields(resultObject: any, model: Model, data: object) {
     });
 }
 
-export default function validateModel(model: Model, data: object | string) {
+export default function validateModel(model: Model, data: object | string): object {
     if (typeof data === 'string') {
         try {
             data = JSON.parse(data);
