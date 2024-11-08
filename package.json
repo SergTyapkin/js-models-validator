@@ -1,6 +1,6 @@
 {
   "name": "@sergtyapkin/models-validator",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": false,
   "license": "MIT",
   "author": {
@@ -25,6 +25,7 @@
     "url": "https://github.com/SergTyapkin/js-models-validator/issues"
   },
   "scripts": {
+    "build": "tsc",
     "test": "tsc && jest --coverage"
   },
   "dependencies": {},
