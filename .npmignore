@@ -6,3 +6,10 @@ tsconfig.json
 .gitignore
 .npmignore
 src
+tests
+coverage
+README.md
+.babelrc
+test-report.html
+.github
+.git

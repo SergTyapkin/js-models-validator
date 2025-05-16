@@ -30,7 +30,8 @@ export interface Model {
 
 
 function throwFieldNotExists(key: string, type: TypeDeclaring) {
-    throw TypeError(`Field "${key}" not exists in provided data. Expecting type: ${JSON.stringify(type) || type}`);
+    // @ts-ignore
+    throw TypeError(`Field "${key}" not exists in provided data. Expecting type: ${JSON.stringify(type) || type?.name || type}`);
 }
 function throwParseError(key: string, expectedType: any, realValue: any) {
     throw TypeError(`Field "${key}" doesn\'t match type in declared model. Expected type: ${expectedType.name}. Gotten: ${JSON.stringify(realValue)}`);
