@@ -29,8 +29,8 @@ export interface Model {
 }
 
 
-function throwFieldNotExists(key: string) {
-    throw TypeError(`Field "${key}" not exists in provided data`);
+function throwFieldNotExists(key: string, type: TypeDeclaring) {
+    throw TypeError(`Field "${key}" not exists in provided data. Expecting type: ${JSON.stringify(type) || type}`);
 }
 function throwParseError(key: string, expectedType: any, realValue: any) {
     throw TypeError(`Field "${key}" doesn\'t match type in declared model. Expected type: ${expectedType.name}. Gotten: ${JSON.stringify(realValue)}`);
@@ -118,7 +118,7 @@ function parseLongDeclaring(resultObject: any, dataValue: any, type: LongTypeDec
 }
 function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key: string, optional: boolean = false, defaultValue: any = undefined) {
     // Assert field existing (optional)
-    if (dataValue === undefined) { // Field not exists or equals undefined
+    if (dataValue === undefined || dataValue === null) { // Field not exists or equals undefined or null
         if (optional) { // Field not exists and optional
             if (defaultValue !== undefined) { // Field not exists, optional, but has default value
                 dataValue = defaultValue;
@@ -126,7 +126,7 @@ function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key:
                 return; // Field not exists, optional, and hasn't default value -> skip
             }
         } else {
-            throwFieldNotExists(key); // Field not exists but must be exists
+            throwFieldNotExists(key, type); // Field not exists but must be exists
         }
     }
 
