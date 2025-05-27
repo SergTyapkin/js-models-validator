@@ -148,7 +148,8 @@ function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key:
   if (dataValue === undefined || dataValue === null) { // Field not exists or equals undefined or null
     if (optional) { // Field not exists and optional
       if (defaultValue !== undefined) { // Field not exists, optional, but has default value
-        dataValue = defaultValue;
+        resultObject[key] = defaultValue;
+        return;
       } else {
         return; // Field not exists, optional, and hasn't default value -> skip
       }
