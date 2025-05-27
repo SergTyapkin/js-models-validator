@@ -292,7 +292,7 @@ export function generateCamelCaseFromSnakeCaseModel(model: Model): Model {
 }
 
 // ------ MODELS SHORTCUTS -----
-export function ArrayType(type: TypeDeclaring, optional = false, defaultValue: any = undefined): ArrayLongTypeDeclaring {
+export function ArrayType(type: TypeDeclaring | Model, optional = false, defaultValue: any = undefined): ArrayLongTypeDeclaring {
   if (
     type instanceof Function ||
     Array.isArray(type) ||
