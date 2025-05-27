@@ -292,7 +292,7 @@ export function generateCamelCaseFromSnakeCaseModel(model: Model): Model {
 }
 
 // ------ MODELS SHORTCUTS -----
-export function ArrayType(type: TypeDeclaring): ArrayLongTypeDeclaring {
+export function ArrayType(type: TypeDeclaring, optional = false, defaultValue: any = undefined): ArrayLongTypeDeclaring {
   if (
     type instanceof Function ||
     Array.isArray(type) ||
@@ -301,6 +301,8 @@ export function ArrayType(type: TypeDeclaring): ArrayLongTypeDeclaring {
     return {
       type: Array,
       item: type,
+      ...(optional && {optional: true}),
+      ...(defaultValue !== undefined && {default: defaultValue}),
     }
   }
 
@@ -309,12 +311,14 @@ export function ArrayType(type: TypeDeclaring): ArrayLongTypeDeclaring {
       type: Array,
       // @ts-ignore
       item: ObjectType(type),
+      ...(optional && {optional: true}),
+      ...(defaultValue !== undefined && {default: defaultValue}),
     }
   }
 
   throw SyntaxError(`Error in declaring ArrayType. Expected type declaration. Provided: "${type}"`);
 }
-export function ObjectType(fields: Model): ObjectLongTypeDeclaring {
+export function ObjectType(fields: Model, optional = false, defaultValue: any = undefined): ObjectLongTypeDeclaring {
   if (typeof fields !== 'object' || fields === null) {
     throw SyntaxError(`Error in declaring ObjectType. Expected object with fields declaration. Provided: "${fields}"`);
   }
@@ -322,5 +326,7 @@ export function ObjectType(fields: Model): ObjectLongTypeDeclaring {
   return {
     type: Object,
     fields: fields,
+    ...(optional && {optional: true}),
+    ...(defaultValue !== undefined && {default: defaultValue}),
   }
 }
