@@ -53,22 +53,22 @@ describe('Simple short declaration. Positive', () => {
     };
     const data = {
       field_1: 61,
-      field_2: null,
+      field_2: 5.1e-10,
       field_3: NaN,
       field_4: [5, 5],
       field_5: "00567",
-      field_6: null,
+      field_6: Infinity,
       field_7: NaN,
       field_8: "515e-14",
       field_9: '2016-01-14T19:37:36-08:00',
     };
     const result = {
       field_1: "61",
-      field_2: "null",
+      field_2: "5.1e-10",
       field_3: "NaN",
       field_4: "5,5",
       field_5: 567,
-      field_6: 0,
+      field_6: Infinity,
       field_7: NaN,
       field_8: 515e-14,
       field_9: new Date('2016-01-15T03:37:36.000Z'),
@@ -140,6 +140,28 @@ describe('Short declaration Enums. Positive', () => {
     };
     expect(validateModel(model, data)).toEqual(result);
   });
+
+  it('Enum in oneof typed mode', () => {
+    const model = {
+      field_1: new Set([Number, Boolean]),
+      field_2: new Set([Boolean, Number]),
+      field_3: new Set([Boolean, Number]),
+      field_4: new Set([Boolean, Number]),
+    };
+    const data = {
+      field_1: false,
+      field_2: false,
+      field_3: 20,
+      field_4: 20,
+    };
+    const result = {
+      field_1: false,
+      field_2: false,
+      field_3: 20,
+      field_4: 20,
+    };
+    expect(validateModel(model, data)).toEqual(result);
+  });
 });
 
 
@@ -160,6 +182,16 @@ describe('Short declaration Enums. Negative', () => {
     };
     const data = {
       field_1: "61",
+    };
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+  });
+
+  it('Enum not converting types in oneof types mode', () => {
+    const model = {
+      field_1: new Set([String, Boolean]),
+    };
+    const data = {
+      field_1: 30,
     };
     expect(() => {validateModel(model, data)}).toThrow(TypeError);
   });
@@ -559,12 +591,12 @@ describe('Long declaration unlimited arrays. Positive', () => {
       },
     };
     const data = {
-      field_1: ['string', 414, NaN, null],
-      field_2: ["515", BigInt(567), 2.1323, null],
+      field_1: ['string', 414, NaN, [5,9]],
+      field_2: ["515", BigInt(567), 2.1323, '89e-20'],
     };
     const result = {
-      field_1: ['string', '414', 'NaN', 'null'],
-      field_2: [515, 567, 2.1323, 0],
+      field_1: ['string', '414', 'NaN', '5,9'],
+      field_2: [515, 567, 2.1323, 89e-20],
     }
     expect(validateModel(model, data)).toEqual(result);
   });
@@ -662,7 +694,7 @@ describe('Nested objects. Positive', () => {
     const data = {
       field_1: {
         field_1_1: "some string",
-        field_1_2: "515.6e-10",
+        field_1_2: "515.6e-12",
         field_1_3: 414,
         field_1_4: 515,
       },
@@ -671,7 +703,7 @@ describe('Nested objects. Positive', () => {
     const result = {
       field_1: {
         field_1_1: "some string",
-        field_1_2: 515.6e-10,
+        field_1_2: 515.6e-12,
         field_1_3: 414,
       },
     }
