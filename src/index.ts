@@ -27,6 +27,7 @@ type TypeDeclaring = LongTypeDeclaring | ShortTypeDeclaring
 export interface Model {
   readonly [index: string]: TypeDeclaring
 }
+
 interface EditableModel {
   [index: string]: TypeDeclaring
 }
@@ -69,22 +70,22 @@ function parseFieldSimpleType(dataValue: any, type: SimpleType | ConstructableTy
   return res;
 }
 
-function parseArray(dataValue: Array<any>, typesArray: Array<ShortTypeDeclaring>, stackTrace: string, stackTraceFrom: string): any[] {
+function parseArray(dataValue: Array<any>, typesArray: Array<ShortTypeDeclaring>, stackTrace: string, stackTraceFrom: string, isReverse: boolean): any[] {
   const res: any[] = [];
   typesArray.forEach((innerType, idx) => {
-    parseField(res, dataValue[idx], innerType, String(idx), undefined, undefined, `${stackTrace}[${idx}]`, `${stackTraceFrom}[${idx}]`);
+    parseField(res, dataValue[idx], innerType, String(idx), undefined, undefined, `${stackTrace}[${idx}]`, `${stackTraceFrom}[${idx}]`, isReverse);
   });
   return res;
 }
 
-function parseUnlimitedArray(dataValue: Array<any>, itemType: TypeDeclaring, stackTrace: string, stackTraceFrom: string) {
+function parseUnlimitedArray(dataValue: Array<any>, itemType: TypeDeclaring, stackTrace: string, stackTraceFrom: string, isReverse: boolean) {
   if (!itemType) {
     throwDeclaringError(stackTrace);
   }
   const res: any[] = [];
   dataValue.forEach((dataValueItem, idx) => {
     // @ts-ignore
-    parseField(res, dataValueItem, itemType, String(idx), itemType.optional, itemType.default, `${stackTrace}[${idx}]`, `${stackTraceFrom}[${idx}]`);
+    parseField(res, dataValueItem, itemType, String(idx), itemType.optional, itemType.default, `${stackTrace}[${idx}]`, `${stackTraceFrom}[${idx}]`, isReverse);
   });
   return res;
 }
@@ -105,7 +106,8 @@ function parseSet(dataValue: any, type: SetType, stackTrace: string, stackTraceF
         if (typeof res === typeof dataValue) {
           result = res;
         }
-      } catch {}
+      } catch {
+      }
     });
     if (result !== null) {
       return result;
@@ -114,20 +116,20 @@ function parseSet(dataValue: any, type: SetType, stackTrace: string, stackTraceF
   throwEnumError(type, dataValue, stackTrace, stackTraceFrom);
 }
 
-function parseLongDeclaring(resultObject: any, dataValue: any, key: string, type: LongTypeDeclaring, stackTrace: string, stackTraceFrom: string) {
+function parseLongDeclaring(resultObject: any, dataValue: any, key: string, type: LongTypeDeclaring, stackTrace: string, stackTraceFrom: string, isReverse: boolean) {
   const longDeclaringType = type.type;
   if (!longDeclaringType) {
     throwDeclaringError(stackTrace);
   }
 
   if (Array.isArray(longDeclaringType)) { // long limited array declaring
-    resultObject[key] = parseArray(dataValue, longDeclaringType, stackTrace, stackTraceFrom);
+    resultObject[key] = parseArray(dataValue, longDeclaringType, stackTrace, stackTraceFrom, isReverse);
     return;
   }
 
   if (longDeclaringType === Array) { // long unlimited array declaring
     const longDeclaringItem = (type as ArrayLongTypeDeclaring).item;
-    resultObject[key] = parseUnlimitedArray(dataValue, longDeclaringItem, stackTrace, stackTraceFrom);
+    resultObject[key] = parseUnlimitedArray(dataValue, longDeclaringItem, stackTrace, stackTraceFrom, isReverse);
     return;
   }
 
@@ -138,15 +140,17 @@ function parseLongDeclaring(resultObject: any, dataValue: any, key: string, type
 
   if (longDeclaringType === Object) { // long field declaring
     const longDeclaringModel = (type as ObjectLongTypeDeclaring).fields;
-    resultObject[key] = {};
-    parseFields(resultObject[key], longDeclaringModel, dataValue, stackTrace, stackTraceFrom);
+    // @ts-ignore
+    const targetKey = isReverse ? (longDeclaringType.from ?? key) : key;
+    resultObject[targetKey] = {};
+    parseFields(resultObject[targetKey], longDeclaringModel, dataValue, stackTrace, stackTraceFrom, isReverse);
     return;
   }
 
   resultObject[key] = parseFieldSimpleType(dataValue, longDeclaringType as SimpleType | ConstructableType, stackTrace, stackTraceFrom); // long simple type declaring
 }
 
-function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key: string, optional: boolean = false, defaultValue: any = undefined, stackTrace: string, stackTraceFrom: string) {
+function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key: string, optional: boolean = false, defaultValue: any = undefined, stackTrace: string, stackTraceFrom: string, isReverse: boolean) {
   // Assert field existing (optional)
   if (dataValue === undefined || dataValue === null) { // Field not exists or equals undefined or null
     if (optional) { // Field not exists and optional
@@ -168,7 +172,7 @@ function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key:
   }
 
   if (Array.isArray(type)) { // short array declaring
-    resultObject[key] = parseArray(dataValue, type, stackTrace, stackTraceFrom);
+    resultObject[key] = parseArray(dataValue, type, stackTrace, stackTraceFrom, isReverse);
     return;
   }
 
@@ -178,28 +182,31 @@ function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key:
   }
 
   if (type instanceof Object) { // long any type declaring
-    parseLongDeclaring(resultObject, dataValue, key, type as LongTypeDeclaring, stackTrace, stackTraceFrom);
+    parseLongDeclaring(resultObject, dataValue, key, type as LongTypeDeclaring, stackTrace, stackTraceFrom, isReverse);
     return;
   }
 
   throwDeclaringError(stackTrace);
 }
 
-function parseFields(resultObject: any, model: Model, data: object, stackTrace: string, stackTraceFrom: string) {
+function parseFields(resultObject: any, model: Model, data: object, stackTrace: string, stackTraceFrom: string, isReverse = false) {
   Object.getOwnPropertyNames(model).forEach(key => {
     const type = model[key];
     // @ts-ignore
-    const dataValue: any | undefined = data[type.from || key];
+    let dataValue: any | undefined = data[isReverse ? key : (type.from ?? key)];
     // @ts-ignore
     const optional = type.optional;
     // @ts-ignore
     const defaultValue = type.default;
     // @ts-ignore
-    parseField(resultObject, dataValue, type, key, optional, defaultValue, `${stackTrace}.${key}`, `${stackTraceFrom}.${type.from || key}`);
+    const targetKey = isReverse ? (type.from ?? key) : key;
+    // @ts-ignore
+    parseField(resultObject, dataValue, type, targetKey, optional, defaultValue, `${stackTrace}.${key}`, `${stackTraceFrom}.${type.from ?? key}`, isReverse);
   });
 }
 
-export default function validateModel(model: Model, data: object | string): object {
+// ------- MODELS VALIDATORS ---------
+export function validateModel(model: Model, data: object | string): object {
   if (typeof data === 'string') {
     try {
       data = JSON.parse(data);
@@ -219,12 +226,28 @@ export default function validateModel(model: Model, data: object | string): obje
   return resultObject;
 }
 
-function camelCaseToSnakeCase(str: string) {
-  return str.replace(/([a-z](?=[A-Z][a-zA-Z])|[A-Z](?=[A-Z][a-z])|[0-9](?=[A-Za-z])|[a-zA-Z](?=[0-9]))/g,'$1_').toLowerCase();
+export function reverseValidateModel(model: Model, data: object): object {
+  if (typeof data !== 'object' || data === null) {
+    throw TypeError('Second argument "data" is not valid type. Must be Object or String');
+  }
+  if (typeof model !== 'object' || model === null) {
+    throw TypeError('First argument "model" must be Object');
+  }
+
+  const resultObject = {};
+  parseFields(resultObject, model, data, '<object>', '<object>', true);
+  return resultObject;
 }
+
+// ------- MODELS GENERATORS ---------
+function camelCaseToSnakeCase(str: string) {
+  return str.replace(/([a-z](?=[A-Z][a-zA-Z])|[A-Z](?=[A-Z][a-z])|[0-9](?=[A-Za-z])|[a-zA-Z](?=[0-9]))/g, '$1_').toLowerCase();
+}
+
 function snakeCaseToCamelCase(str: string) {
   return str.replace(/_([^_])/g, (_, word) => word[0].toUpperCase() + word.slice(1));
 }
+
 function generateModelWithChangedKeys<T extends Model | TypeDeclaring>(model: T, keyChangingFoo: (str: string) => string): T {
   function getChangedFieldType(type: TypeDeclaring, key: string): TypeDeclaring {
     const changedKey = keyChangingFoo(key);
@@ -263,6 +286,7 @@ function generateModelWithChangedKeys<T extends Model | TypeDeclaring>(model: T,
 export function generateSnakeCaseFromCamelCaseModel(model: Model): Model {
   return generateModelWithChangedKeys(model, camelCaseToSnakeCase);
 }
+
 export function generateCamelCaseFromSnakeCaseModel(model: Model): Model {
   return generateModelWithChangedKeys(model, snakeCaseToCamelCase);
 }

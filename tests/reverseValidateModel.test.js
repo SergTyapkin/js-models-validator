@@ -1,4 +1,4 @@
-import {validateModel} from "../dist/index.js";
+import {reverseValidateModel} from "../dist/index.js";
 
 describe('Simple short declaration. Positive', () => {
   it('Simple parsing', () => {
@@ -14,7 +14,7 @@ describe('Simple short declaration. Positive', () => {
       field_1: "some string",
       field_2: 515,
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Discard extra fields', () => {
@@ -36,7 +36,7 @@ describe('Simple short declaration. Positive', () => {
       field_1: "some string",
       field_2: 515,
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Convert types', () => {
@@ -73,7 +73,7 @@ describe('Simple short declaration. Positive', () => {
       field_8: 515e-14,
       field_9: new Date('2016-01-15T03:37:36.000Z'),
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -85,7 +85,7 @@ describe('Simple short declaration. Negative', () => {
     const data = {
       field_1: "string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Field not exists', () => {
@@ -96,7 +96,7 @@ describe('Simple short declaration. Negative', () => {
     const data = {
       field_2: "string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Error when converting type', () => {
@@ -106,7 +106,7 @@ describe('Simple short declaration. Negative', () => {
     const data = {
       field_1: "string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 });
 
@@ -125,7 +125,7 @@ describe('Short declaration Enums. Positive', () => {
       field_1: 61,
       field_2: "some_value",
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Enum 1 value', () => {
@@ -138,7 +138,7 @@ describe('Short declaration Enums. Positive', () => {
     const result = {
       field_1: 123,
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Enum in oneof typed mode', () => {
@@ -160,7 +160,7 @@ describe('Short declaration Enums. Positive', () => {
       field_3: 20,
       field_4: 20,
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -173,7 +173,7 @@ describe('Short declaration Enums. Negative', () => {
     const data = {
       field_1: 62,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Enum not converting types', () => {
@@ -183,7 +183,7 @@ describe('Short declaration Enums. Negative', () => {
     const data = {
       field_1: "61",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Enum not converting types in oneof types mode', () => {
@@ -193,7 +193,7 @@ describe('Short declaration Enums. Negative', () => {
     const data = {
       field_1: 30,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Empty enum', () => {
@@ -203,7 +203,7 @@ describe('Short declaration Enums. Negative', () => {
     const data = {
       field_1: null,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 });
 
@@ -219,7 +219,7 @@ describe('Short declaration Arrays with fixed length. Positive', () => {
     const result = {
       field_1: ["some string", 515, "600"],
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Empty array', () => {
@@ -232,7 +232,7 @@ describe('Short declaration Arrays with fixed length. Positive', () => {
     const result = {
       field_1: [],
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Enum in array', () => {
@@ -245,7 +245,7 @@ describe('Short declaration Arrays with fixed length. Positive', () => {
     const result = {
       field_1: [5, "some string"],
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Different array length. Longer than needs', () => {
@@ -258,7 +258,7 @@ describe('Short declaration Arrays with fixed length. Positive', () => {
     const result = {
       field_1: [333, "444", 555],
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -271,7 +271,7 @@ describe('Short declaration Arrays with fixed length. Negative', () => {
     const data = {
       field_1: [555, "some string"],
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Different array length. Shorter than needs', () => {
@@ -281,7 +281,7 @@ describe('Short declaration Arrays with fixed length. Negative', () => {
     const data = {
       field_1: [333, 444],
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 });
 
@@ -309,7 +309,7 @@ describe('Long declaration simple types. Positive', () => {
       field_2: 500,
       field_3: new Date('2016-01-15T03:37:36.000Z'),
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Optional', () => {
@@ -334,7 +334,7 @@ describe('Long declaration simple types. Positive', () => {
       field_2: 500,
       field_3: new Date('2016-01-15T03:37:36.000Z'),
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Optional with default', () => {
@@ -362,7 +362,7 @@ describe('Long declaration simple types. Positive', () => {
       field_2: 500,
       field_3: new Date('2016-01-15T03:37:36.000Z'),
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Another model names', () => {
@@ -381,16 +381,16 @@ describe('Long declaration simple types. Positive', () => {
       },
     };
     const data = {
-      another_field_1: 400,
-      another_field_2: 500,
-      another_field_3: '2016-01-14T19:37:36-08:00',
+      field_1: 400,
+      field_2: 500,
+      field_3: '2016-01-14T19:37:36-08:00',
     };
     const result = {
-      field_1: "400",
-      field_2: 500,
-      field_3: new Date('2016-01-15T03:37:36.000Z'),
+      another_field_1: "400",
+      another_field_2: 500,
+      another_field_3: new Date('2016-01-15T03:37:36.000Z'),
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Optional with another model names', () => {
@@ -410,17 +410,22 @@ describe('Long declaration simple types. Positive', () => {
         optional: true,
         from: "another_field_3",
       },
+      field_4: {
+        type: Date,
+        optional: true,
+        from: "another_field_4",
+      },
     };
     const data = {
-      another_field_2: 500,
-      another_field_3: '2016-01-14T19:37:36-08:00',
+      field_2: 500,
+      field_3: '2016-01-14T19:37:36-08:00',
     };
     const result = {
-      field_1: "default string",
-      field_2: 500,
-      field_3: new Date('2016-01-15T03:37:36.000Z'),
+      another_field_1: "default string",
+      another_field_2: 500,
+      another_field_3: new Date('2016-01-15T03:37:36.000Z'),
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Unlimited array', () => {
@@ -435,7 +440,7 @@ describe('Long declaration simple types. Positive', () => {
     const result = {
       field_1: ["str1", 515, "str2"],
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Enum', () => {
@@ -450,7 +455,7 @@ describe('Long declaration simple types. Positive', () => {
     const result = {
       field_1: 515,
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -464,7 +469,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: "some string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('field not exists', () => {
@@ -479,10 +484,10 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: 515,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
-  it('another model name not exists', () => {
+  it('Field name not exists', () => {
     const model = {
       field_1: {
         type: Number,
@@ -493,10 +498,10 @@ describe('Long declaration simple types. Negative', () => {
       },
     };
     const data = {
-      field_1: 414,
+      field_not_1: 414,
       field_2: 515,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Field type is Object without field "type"', () => {
@@ -506,7 +511,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: 515,
     };
-    expect(() => {validateModel(model, data)}).toThrow(SyntaxError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(SyntaxError);
   });
 
   it('Field type is value', () => {
@@ -516,7 +521,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: 515,
     };
-    expect(() => {validateModel(model, data)}).toThrow(SyntaxError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(SyntaxError);
   });
 
   it('Unlimited array type is value', () => {
@@ -528,7 +533,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: ["str1", "515", "str2"],
     };
-    expect(() => {validateModel(model, data)}).toThrow(SyntaxError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(SyntaxError);
   });
 
   it('Unlimited array inconvertible type', () => {
@@ -540,7 +545,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: ["str1", "str2", "str3"],
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Enum not allowed value', () => {
@@ -552,7 +557,7 @@ describe('Long declaration simple types. Negative', () => {
     const data = {
       field_1: 616,
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 });
 
@@ -576,7 +581,7 @@ describe('Long declaration unlimited arrays. Positive', () => {
       field_1: ['string', '414', 'cell', '2 words'],
       field_2: [515, 567, 2.1323, 0],
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Types converting', () => {
@@ -598,7 +603,7 @@ describe('Long declaration unlimited arrays. Positive', () => {
       field_1: ['string', '414', 'NaN', '5,9'],
       field_2: [515, 567, 2.1323, 89e-20],
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Empty array', () => {
@@ -620,7 +625,7 @@ describe('Long declaration unlimited arrays. Positive', () => {
       field_1: [],
       field_2: [],
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -635,7 +640,7 @@ describe('Long declaration unlimited arrays. Negative', () => {
     const data = {
       field_1: ['some string'],
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Not array. May be iterable', () => {
@@ -648,7 +653,7 @@ describe('Long declaration unlimited arrays. Negative', () => {
     const data = {
       field_1: 'some string',
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Not array. Object', () => {
@@ -661,7 +666,7 @@ describe('Long declaration unlimited arrays. Negative', () => {
     const data = {
       field_1: {0: "str1", 1: "str2"},
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Not specified item type', () => {
@@ -673,7 +678,7 @@ describe('Long declaration unlimited arrays. Negative', () => {
     const data = {
       field_1: ["str1", "str2"],
     };
-    expect(() => {validateModel(model, data)}).toThrow(SyntaxError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(SyntaxError);
   });
 });
 
@@ -707,7 +712,7 @@ describe('Nested objects. Positive', () => {
         field_1_3: 414,
       },
     }
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Deep nesting', () => {
@@ -756,7 +761,7 @@ describe('Nested objects. Positive', () => {
         field_1_2: 1,
       },
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
   it('Nested object in long declared array', () => {
@@ -796,7 +801,7 @@ describe('Nested objects. Positive', () => {
         }
       ]
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 
 
@@ -834,7 +839,7 @@ describe('Nested objects. Positive', () => {
         "some string 2"
       ]
     };
-    expect(validateModel(model, data)).toEqual(result);
+    expect(reverseValidateModel(model, data)).toEqual(result);
   });
 });
 
@@ -844,7 +849,7 @@ describe('Base function arguments. Negative', () => {
     const data = {
       field_1: "string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Model not Object 2', () => {
@@ -852,7 +857,7 @@ describe('Base function arguments. Negative', () => {
     const data = {
       field_2: "string",
     };
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 
   it('Data not string or object', () => {
@@ -860,31 +865,7 @@ describe('Base function arguments. Negative', () => {
       field_1: BigInt,
     };
     const data = 700;
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
+    expect(() => {reverseValidateModel(model, data)}).toThrow(TypeError);
   });
 });
 
-describe("Data converts from string. Positive", () => {
-  it('Data is string', () => {
-    const model = {
-      field_1: String,
-      field_2: Number,
-    };
-    const data = '{"field_1": "61", "field_2": 515}';
-    const result = {
-      field_1: "61",
-      field_2: 515,
-    };
-    expect(validateModel(model, data)).toEqual(result);
-  });
-});
-describe("Data converts from string. Negative", () => {
-  it('Invalid JSON', () => {
-    const model = {
-      field_1: String,
-      field_2: Number,
-    };
-    const data = 'field_1: "61", "field_2": 515';
-    expect(() => {validateModel(model, data)}).toThrow(TypeError);
-  });
-});
