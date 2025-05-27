@@ -290,3 +290,37 @@ export function generateSnakeCaseFromCamelCaseModel(model: Model): Model {
 export function generateCamelCaseFromSnakeCaseModel(model: Model): Model {
   return generateModelWithChangedKeys(model, snakeCaseToCamelCase);
 }
+
+// ------ MODELS SHORTCUTS -----
+export function ArrayType(type: TypeDeclaring): ArrayLongTypeDeclaring {
+  if (
+    type instanceof Function ||
+    Array.isArray(type) ||
+    type instanceof Set
+  ) { // short declaring
+    return {
+      type: Array,
+      item: type,
+    }
+  }
+
+  if (typeof type === 'object' && type !== null) { // object declaring
+    return {
+      type: Array,
+      // @ts-ignore
+      item: ObjectType(type),
+    }
+  }
+
+  throw SyntaxError(`Error in declaring ArrayType. Expected type declaration. Provided: "${type}"`);
+}
+export function ObjectType(fields: Model): ObjectLongTypeDeclaring {
+  if (typeof fields !== 'object' || fields === null) {
+    throw SyntaxError(`Error in declaring ObjectType. Expected object with fields declaration. Provided: "${fields}"`);
+  }
+
+  return {
+    type: Object,
+    fields: fields,
+  }
+}

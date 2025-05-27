@@ -9,7 +9,7 @@ For example, for JSON-parsed Objects that received from network. <br>
 _You can see examples in tests [validateModel.test.js](./tests/validateModel.test.js)_
 
 ---
-## 📃 Docs for models:
+# ⏩ Docs for validateModel
 > [!IMPORTANT]
 > All model fields describes as:
 > <br> `from`: `fieldType`
@@ -114,11 +114,13 @@ const exampleModel = {
 ## Example model validation:
 
 ```JS
+import { validateModel } from '@sergtyapkin/models-validator';
+
 const UserModel = { // declare model
   age: Number,
   userName: {
-    type: [String, String], // maybe ["name", "surname"]
-    from: "user_name", // name in API model
+    type: [String, String], // maybe ["john", "doe"]
+    from: "user_name", // name in incoming data for validation
   }, 
   sex: new Set(['male', 'female']), // one of two values
   children: {
@@ -139,3 +141,149 @@ const data = validateModel(UserModel, await response.text()); // validate
 ```
 
 _For more examples you can see file with tests [validateModel.test.js](./tests/validateModel.test.js)_
+
+---
+# ♻️ Reverse validation
+
+Use the function `reverseValidateModel` to compress validated model back.
+If in model was fields with `from` params, reverse validating will writes values in this fields
+in fields which names describes in `from` params.
+
+### Example:
+```JS
+import { validateModel, reverseValidateModel } from '@sergtyapkin/models-validator';
+
+// STRAIGHT VALIDATING
+const Model = { // declare model
+  userName: {
+    type: [String, String], // maybe ["john", "doe"]
+    from: "user_name_snake_case", // name in incoming data for validation 
+  }, 
+  userAge: {
+    type: Number,
+    from: "user_age_snake_case",
+  }
+}
+
+const unvalidatedData = {
+  user_name_snake_case: ["John", "Doe"],
+  user_age_snake_case: 30,
+}
+const data = validateModel(Model, unvalidatedData);
+/* data = {
+  userName: ["John", "Doe"],
+  userAge: 30,
+}
+*/
+
+// REVERSE VALIDATING
+const reversedData = reverseValidateModel(Model, data);
+/* reversedData = {
+  user_name_snake_case: ["John", "Doe"],
+  user_age_snake_case: 30,
+}
+*/
+```
+
+---
+# 🔁 snake_case and CamelCase generators
+You can describe model in only camelCase or PascalCase fields and generator
+adds longDeclaring param `from` with snake_case field name. Or vice versa.
+ 
+### Example:
+```JS
+/** CamelCase -> snake_case **/
+import { generateSnakeCaseFromCamelCaseModel } from '@sergtyapkin/models-validator';
+
+const Model = generateSnakeCaseFromCamelCaseModel({ // declare model
+  someUSERName: String,
+  UserAgePascalCase: Number,
+});
+/* Model = {
+  someUSERName: {
+    type: String,
+    from: "some_user_name",
+  }, 
+  UserAgePascalCase: {
+    type: Number,
+    from: "user_age_pascal_case",
+  }
+}
+ */
+```
+```JS
+/** snake_case -> CamelCase **/
+import { generateCamelCaseFromSnakeCaseModel } from '@sergtyapkin/models-validator';
+
+const Model = generateCamelCaseFromSnakeCaseModel({ // declare model
+  some_user_name: String, 
+  user_age_snake_case: Number,
+});
+/* Model = {
+  some_user_name: {
+    type: String,
+    from: "someUserName",
+  }, 
+  user_age_snake_case: {
+    type: Number,
+    from: "userAgeSnakeCase",
+  }
+}
+ */
+```
+
+---
+# ✂️ Shortcuts
+You can describe simple Array or Object models shortly:
+ 
+```JS
+import { ArrayType, ObjectType } from '@sergtyapkin/models-validator';
+
+const ModelWithArray = { // declare model
+  someArray: ArrayType(String),
+};
+/* ModelWithArray = {
+  someArrayStr: {
+    type: Array,
+    item: String,
+  }, 
+}
+ */
+
+const ModelWithObject = { // declare model
+  someObject: ObjectType({
+    field1: String,
+    field2: Number,
+  }),
+};
+/* ModelWithObject = {
+  someObject: {
+    type: Object,
+    fields: {
+      field1: String,
+      field2: Number,
+    },
+  }, 
+}
+ */
+
+const ModelWithObjectInArray = { // declare model
+  someObjectInArray: ArrayType({
+    field1: String,
+    field2: Number,
+  }),
+};
+/* ModelWithObjecwtInArray = {
+  someObjectInArray: {
+    type: Array,
+    item: {
+      type: Object,
+      fields: {
+        field1: String,
+        field2: Number,
+      },
+    },
+  }, 
+}
+ */
+```
