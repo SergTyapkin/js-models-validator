@@ -2,16 +2,19 @@
 ![Run tests](https://github.com/SergTyapkin/js-models-validator/workflows/Run%20tests/badge.svg)
 ![downloads](https://img.shields.io/npm/dt/%40sergtyapkin%2Fmodels-validator)
 
+**🎉 Be sure of the right types of incoming data with this! 🎉**
+
 Models Validator for Objects.
-For example, for JSON-parsed Objects that received from network.
+For example, for JSON-parsed Objects that received from network. <br>
+_You can see examples in tests [validateModel.test.js](./tests/validateModel.test.js)_
 
 ---
-## Docs for models:
+## 📃 Docs for models:
 > [!IMPORTANT]
 > All model fields describes as:
 > <br> `from`: `fieldType`
 
-`fieldType` can be declared as:
+### 📝 `fieldType` can be declared as:
 
 1. <u><b>Simple type</b></u>: `String`, `Number`, `Date`, `Object`, `Array`,... (`Array` in this case can contain any elements of any types)
 2. <u><b>Enum</b></u>: `new Set(["some_val", 456, "val2"])` (Field can only be `"some_val"` or `456` or `"val2"`)
@@ -55,7 +58,7 @@ For example, for JSON-parsed Objects that received from network.
   }
   ```
 
-## All fields options at long declaration:
+## ⚙ All fields options at long declaration:
 
 | Field      | Type                                         | Description                                                                                     |
 |------------|----------------------------------------------|-------------------------------------------------------------------------------------------------|
@@ -135,4 +138,4 @@ const response = fetch('/user', {method: 'GET'}); // get unvalidated JSON data
 const data = validateModel(UserModel, await response.text()); // validate
 ```
 
-_For more examples you can see file with tests [validateModel.test.js](./validateModel.test.js)_
+_For more examples you can see file with tests [validateModel.test.js](./tests/validateModel.test.js)_
