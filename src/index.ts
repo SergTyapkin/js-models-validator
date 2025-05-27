@@ -330,3 +330,10 @@ export function ObjectType(fields: Model, optional = false, defaultValue: any = 
     ...(defaultValue !== undefined && {default: defaultValue}),
   }
 }
+export function Type(type: TypeDeclaring, optional = false, defaultValue: any = undefined): LongTypeDeclaring {
+  return {
+    type: type,
+    ...(optional && {optional: true}),
+    ...(defaultValue !== undefined && {default: defaultValue}),
+    }
+}

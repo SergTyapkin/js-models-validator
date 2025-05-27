@@ -234,10 +234,22 @@ const Model = generateCamelCaseFromSnakeCaseModel({ // declare model
 
 ---
 # ✂️ Shortcuts
-You can describe simple Array or Object models shortly:
+You can describe long types, simple Array or Object fields shortly:
  
 ```JS
-import { ArrayType, ObjectType } from '@sergtyapkin/models-validator';
+import { Type, ArrayType, ObjectType } from '@sergtyapkin/models-validator';
+
+const Model = { // declare model
+  someField: Type(String, true, 'default value'),
+};
+/* Model = {
+  someField: {
+    type: String,
+    optional: true,
+    default: 'default value',
+  }, 
+}
+ */
 
 const ModelWithArray = { // declare model
   someArray: ArrayType(String),
