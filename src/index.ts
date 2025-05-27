@@ -27,6 +27,9 @@ type TypeDeclaring = LongTypeDeclaring | ShortTypeDeclaring
 export interface Model {
   readonly [index: string]: TypeDeclaring
 }
+interface EditableModel {
+  [index: string]: TypeDeclaring
+}
 
 const SIMPLE_TYPES_CONSTRUCTORS = [String, Number, BigInt, Symbol, Boolean];
 
@@ -184,7 +187,7 @@ function parseField(resultObject: any, dataValue: any, type: TypeDeclaring, key:
 
 function parseFields(resultObject: any, model: Model, data: object, stackTrace: string, stackTraceFrom: string) {
   Object.getOwnPropertyNames(model).forEach(key => {
-    const type = model[key]!;
+    const type = model[key];
     // @ts-ignore
     const dataValue: any | undefined = data[type.from || key];
     // @ts-ignore
@@ -214,4 +217,52 @@ export default function validateModel(model: Model, data: object | string): obje
   const resultObject = {};
   parseFields(resultObject, model, data, '<object>', '<object>');
   return resultObject;
+}
+
+function camelCaseToSnakeCase(str: string) {
+  return str.replace(/([a-z](?=[A-Z][a-zA-Z])|[A-Z](?=[A-Z][a-z])|[0-9](?=[A-Za-z])|[a-zA-Z](?=[0-9]))/g,'$1_').toLowerCase();
+}
+function snakeCaseToCamelCase(str: string) {
+  return str.replace(/_([^_])/g, (_, word) => word[0].toUpperCase() + word.slice(1));
+}
+function generateModelWithChangedKeys<T extends Model | TypeDeclaring>(model: T, keyChangingFoo: (str: string) => string): T {
+  function getChangedFieldType(type: TypeDeclaring, key: string): TypeDeclaring {
+    const changedKey = keyChangingFoo(key);
+    if (
+      type instanceof Function ||
+      Array.isArray(type) ||
+      type instanceof Set
+    ) { // short declaring
+      return changedKey === key ? type : {
+        type: type,
+        from: changedKey,
+      }
+    }
+
+    // long declaring
+    return Object.assign(
+      changedKey !== key ? {from: changedKey} : {},
+      type,
+      // @ts-ignore
+      type.item ? {item: getChangedFieldType(type.item, '')} : {},
+      // @ts-ignore
+      type.fields ? {fields: generateModelWithChangedKeys(type.fields, keyChangingFoo)} : {},
+    );
+  }
+
+  const resultModel = {} as EditableModel;
+  Object.getOwnPropertyNames(model).forEach(key => {
+    // @ts-ignore
+    const type = model[key];
+    resultModel[key] = getChangedFieldType(type, key);
+  });
+  // @ts-ignore
+  return resultModel;
+}
+
+export function generateSnakeCaseFromCamelCaseModel(model: Model): Model {
+  return generateModelWithChangedKeys(model, camelCaseToSnakeCase);
+}
+export function generateCamelCaseFromSnakeCaseModel(model: Model): Model {
+  return generateModelWithChangedKeys(model, snakeCaseToCamelCase);
 }
