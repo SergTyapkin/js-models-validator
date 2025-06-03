@@ -39,6 +39,25 @@ describe('Simple short declaration. Positive', () => {
     expect(validateModel(model, data)).toEqual(result);
   });
 
+  it('"Any" type', () => {
+    const model = {
+      field_1: Object,
+      field_2: Object,
+      field_3: Object,
+    };
+    const data = {
+      field_1: "some string",
+      field_2: 515,
+      field_3: [415, "some_string"],
+    };
+    const result = {
+      field_1: "some string",
+      field_2: 515,
+      field_3: [415, "some_string"],
+    };
+    expect(validateModel(model, data)).toEqual(result);
+  });
+
   it('Convert types', () => {
     const model = {
       field_1: String,
@@ -710,6 +729,56 @@ describe('Nested objects. Positive', () => {
     expect(validateModel(model, data)).toEqual(result);
   });
 
+  it('Unlimited objects', () => {
+    const model = {
+      field_1: {
+        type: Object,
+      },
+      field_2: {
+        type: Object,
+        fields: {
+          field_2_1: Object,
+          field_2_2: Number,
+        }
+      },
+    };
+    const data = {
+      field_1: {
+        field_1_1: "some string",
+        field_1_2: [1, 'asd', 3],
+        field_1_3: 414,
+        field_1_4: {
+          field_1_4_1: 'some string',
+        },
+      },
+      field_2: {
+        field_2_1: {
+          field_2_1_1: 'string',
+          field_2_1_2: [],
+        },
+        field_2_2: 8123,
+      },
+    };
+    const result = {
+      field_1: {
+        field_1_1: "some string",
+        field_1_2: [1, 'asd', 3],
+        field_1_3: 414,
+        field_1_4: {
+          field_1_4_1: 'some string',
+        },
+      },
+      field_2: {
+        field_2_1: {
+          field_2_1_1: 'string',
+          field_2_1_2: [],
+        },
+        field_2_2: 8123,
+      },
+    };
+    expect(validateModel(model, data)).toEqual(result);
+  });
+
   it('Deep nesting', () => {
     const model = {
       field_1: {
@@ -797,6 +866,68 @@ describe('Nested objects. Positive', () => {
       ]
     };
     expect(validateModel(model, data)).toEqual(result);
+  });
+
+
+  it('Nested object in short declared array', () => {
+    const model = {
+      field_1: [
+        {
+          type: Object,
+          fields: {
+            field_item_1: Number,
+            field_item_2: String,
+          }
+        },
+        Number,
+        String,
+      ]
+    };
+    const data = {
+      field_1: [
+        {
+          field_item_1: 515,
+          field_item_2: "some string",
+        },
+        414,
+        "some string 2"
+      ]
+    };
+    const result = {
+      field_1: [
+        {
+          field_item_1: 515,
+          field_item_2: "some string",
+        },
+        414,
+        "some string 2"
+      ]
+    };
+    expect(validateModel(model, data)).toEqual(result);
+  });
+});
+
+
+describe('Nested objects. Negative', () => {
+  it('Unlimited objects wrong type', () => {
+    const model = {
+      field_1: {
+        type: Object,
+        fields: {
+          field_1_1: {
+            type: Object,
+          },
+          field_1_2: Number,
+        }
+      },
+    };
+    const data = {
+      field_1: {
+        field_1_1: "some string",
+        field_1_2: 414,
+      },
+    };
+    expect(() => {validateModel(model, data)}).toThrow(TypeError);
   });
 
 

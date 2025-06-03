@@ -58,6 +58,8 @@ function parseFieldSimpleType(dataValue: any, type: SimpleType | ConstructableTy
     if (SIMPLE_TYPES_CONSTRUCTORS.includes(type as SimpleType)) {
       // @ts-ignore
       res = (type as SimpleType)(dataValue); // use functional type construction for simple types
+    } else if (type === Object) { // "any" type
+      res = dataValue;
     } else {
       res = new (type as ConstructableType)(dataValue); // use class constructor for another types
     }
@@ -143,6 +145,15 @@ function parseLongDeclaring(resultObject: any, dataValue: any, key: string, type
     // @ts-ignore
     const targetKey = isReverse ? (longDeclaringType.from ?? key) : key;
     resultObject[targetKey] = {};
+
+    if (!longDeclaringModel) { // unlimited Object with any fields
+      if (typeof dataValue !== 'object') {
+        throwParseError(longDeclaringType, dataValue, stackTrace, stackTraceFrom);
+        return;
+      }
+      resultObject[targetKey] = dataValue;
+      return;
+    }
     parseFields(resultObject[targetKey], longDeclaringModel, dataValue, stackTrace, stackTraceFrom, isReverse);
     return;
   }
